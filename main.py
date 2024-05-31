@@ -136,9 +136,7 @@ for record in range(first_record, last_record, 1):
     Se nome com artigo existir, fica esse
     Se não, fica o que não tem artigos
     """
-        
-      
-                
+               
     if 'label' in data_from_200_field:
         if len(data_from_200_field['label']) > 0:
             label_qid_with_articles = wikidata.get_wiki_id(data_from_200_field['label'], record)
@@ -149,18 +147,14 @@ for record in range(first_record, last_record, 1):
             else:
                 label_qid = label_qid_without_articles
     if len(label_qid) > 0:
-        # print("\nwikidata_200_field: ", label_qid)
-        # # alias_qid_with_articles = ""
-        # # alias_qid_withou_articles = ""   
         
         wikidata_400_fields = []
         for i in range(len(data_from_400_fields)):
             
-            # print("data_from_400_fields[i]['alias']: ", data_from_400_fields[i]['alias'])
             if len(data_from_400_fields[i]['alias']) > 0:
                 
                 alias_qid_with_articles = wikidata.get_wiki_id(data_from_400_fields[i]['alias'], record)
-                time.sleep(1)  
+                # time.sleep(1)  
                 alias_qid_without_articles = wikidata.get_wiki_id_from_name_without_articles(data_from_400_fields[i]['alias'], record)
 
             if len(alias_qid_with_articles) > 0:

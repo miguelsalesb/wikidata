@@ -137,6 +137,7 @@ def get_library_record_data(record):
                 dict_400_field = {}
                 
                 name_400_field, surname_400_field, initials_400_field, dates_400_field = "", "", "", ""
+                alias = ""
                 if tag == '400':
                     
                     for subfield in subfields:
@@ -172,10 +173,11 @@ def get_library_record_data(record):
                             alias = surname_400_field + " " + name_400_field
                             dict_400_field['alias'] = alias.strip()
                             list_400_field.append(dict_400_field['alias'])
-                        # Sometimes the 400 field names are the same as the 200 names
-                        # To avoid that redundancy, those names are excluded
-                        if label != surname_400_field.strip() + " " + name_400_field.strip():
-                            list_all_400_fields.append(dict_400_field)
+
+                    # Sometimes the 400 field names are the same as the 200 names
+                    # To avoid that redundancy, those names are excluded
+                    if label not in list_400_field:
+                        list_all_400_fields.append(dict_400_field)
 
                     if tag == '830':
                         for subfield in subfields:

@@ -95,7 +95,7 @@ def get_wiki_id_from_name_without_articles(name, record):
         languages = ['pt', 'en']
         qids = []
         
-        if record % 100 == 0 : time.sleep(2)
+        if record % 5 == 0 : time.sleep(1)
         for language in languages:
             url = 'https://query.wikidata.org/sparql?format=json&query=SELECT%20DISTINCT%20?item%20WHERE%20{?item%20wdt:P31%20wd:Q5.%20?item%20?label%20"' + author_name + '"@' + language + '%20FILTER(BOUND(?item)).%20SERVICE%20wikibase:label%20{bd:serviceParam%20wikibase:language%20%22' + language + '%22.}}'
 
