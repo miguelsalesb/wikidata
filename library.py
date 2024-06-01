@@ -1,13 +1,10 @@
-import sqlite3
 import time
 import ssl
-import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error
 from urllib.parse import urljoin
 from urllib.parse import urlparse
 import xml.etree.ElementTree as ET
 import re
-from datetime import datetime, timedelta
-
 
 # Ignore SSL certificate errors
 ctx = ssl.create_default_context()

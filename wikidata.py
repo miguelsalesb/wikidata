@@ -1,5 +1,5 @@
 import urllib.request, urllib.parse
-import http, json, ssl
+import json, ssl
 import time
 
 # Ignore SSL certificate errors

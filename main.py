@@ -76,15 +76,7 @@ Fernando Manzanares Abecasis	Fernando Maria Alberto do Perpétuo Socorro Manzana
 
 """   
 
-import sqlite3
-import time
-import ssl
-import urllib.request, urllib.parse, urllib.error
-from urllib.parse import urljoin
-from urllib.parse import urlparse
-import xml.etree.ElementTree as ET
 import re
-from datetime import datetime, timedelta
 import db
 from library import get_library_record_data
 import wikidata
