@@ -89,9 +89,10 @@ def get_wiki_id(name, record):
 def get_wiki_id_from_name_without_articles(name, record):
     # Only make the search if there is any name
     if len(name ) > 0:
-        author_name = name.replace(' ', '%20').replace(' de ', ' ').replace(' des ', ' ').replace(' da ', ' ').replace(' das ', ' ').replace(' do ', ' ').replace(' dos ', ' ').replace('"', '')
+        author_name = name.replace(' de ', ' ').replace(' des ', ' ').replace(' da ', ' ').replace(' das ', ' ').replace(' do ', ' ').replace(' dos ', ' ').replace('"', '')
 
         author_name = urllib.parse.quote(author_name)
+        print("AUTHOR NAME: ", author_name)
         languages = ['pt', 'en']
         qids = []
         
