@@ -3,7 +3,7 @@ import sqlite3
 
 # Whenever the script is ran, the databas will be deleted and a new one is creted
 
-DATABASE = 'Wikidata.sqlite'
+DATABASE = 'Wikidata_teste2.sqlite'
 
 
 def create_database():

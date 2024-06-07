@@ -1,10 +1,13 @@
+import sqlite3
 import time
 import ssl
-import urllib.request, urllib.error
+import urllib.request, urllib.parse, urllib.error
 from urllib.parse import urljoin
 from urllib.parse import urlparse
 import xml.etree.ElementTree as ET
 import re
+from datetime import datetime, timedelta
+import dates
 
 # Ignore SSL certificate errors
 ctx = ssl.create_default_context()
@@ -26,7 +29,7 @@ def get_library_record_data(record):
     # Create a dictionnary to append the 200 data
     dict_200_field = {}
     name_200_field, surname_200_field, initials_200_field, dates_200_field, label = "", "", "", "", ""
-            
+    birth_date, death_date = 0, 0
     # Create a list to append the 400 fields data
     list_all_400_fields = []
     # field 400 is repeatable, so data is appended to lists
@@ -126,7 +129,11 @@ def get_library_record_data(record):
                             
                         if code == 'f':
                             dates_200_field = value.strip()
+                            # get the birth and deatg dates from the dates
+                            birth_date, death_date = dates.get_dates(dates_200_field)
                         dict_200_field['dates'] = dates_200_field
+                        dict_200_field['birth_date'] = birth_date
+                        dict_200_field['death_date'] = death_date
                     label = surname_200_field.strip() + " " + name_200_field.strip()
                     dict_200_field['label'] = label.strip()
                             
@@ -193,7 +200,7 @@ def get_library_record_data(record):
     dict_some_fields['description'] = description
 
     
-    if record % 100 == 0 : time.sleep(1)
+    # if record % 100 == 0 : time.sleep(1)
     
 
     return dict_some_fields, dict_200_field, list_all_400_fields
