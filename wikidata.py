@@ -148,13 +148,13 @@ def get_wikidata_id_from_name_without_articles(name, record):
 # get_wiki_id("Mario Soares", 11)
 
 
-def get_wikidata_content(wikidata_id, library_id):
+def get_wikidata_data(wikidata_id, library_id):
     
     # wikidata_author_description = ""
     wikidata_author_library_id = ""
     wikidata_author_birth_date = ""
     wikidata_author_death_date = ""
-    # wikidata_author_occupations = []
+    wikidata_author_occupations = []
     # wikidata_author_notable_work = []    
     
     url = 'https://query.wikidata.org/sparql?format=json&query=SELECT%20?prop%20?val_%20?val_Label%20?authorDescription%20{VALUES%20(?author)%20{(wd:' + wikidata_id + ')}%20?author%20?p%20?statement.%20?statement%20?val%20?val_.%20?prop%20wikibase:claim%20?p.%20?prop%20wikibase:statementProperty%20?val.%20SERVICE%20wikibase:label%20{bd:serviceParam%20wikibase:language%20%22pt%22%20}}%20ORDER%20BY%20?prop%20?statement%20?val_'
@@ -163,19 +163,19 @@ def get_wikidata_content(wikidata_id, library_id):
         uh = urllib.request.urlopen(url, context=ctx)
     except urllib.error.HTTPError as e:
         print("\n\nHTTP (wikidata) Error : ", e)
-        # return ''
         quit()
     except urllib.error.URLError as e:
         print("URL (wikidata) Error: ", e)
-        # return ''
         quit()
                 
-    data = uh.read().decode('utf-8') # read - fornece os dados em utf-8 e converte para unicode para ser manipulado pela Python
-    # print('Retrieved', len(data), 'characters', data[:20].replace('\n', ' '))
-    js = json.loads(data) # converte os dados que estão numa string em json
+    data = uh.read().decode('utf-8') 
+    js = json.loads(data)
+
 
     if len(js['results']['bindings']) > 0:
+        
         for data in js['results']['bindings']:
+            occupation = ""
             for key, values in data.items():
                 if key == 'prop' and values['value'] == 'http://www.wikidata.org/entity/P1005':
                     wikidata_author_library_id = data['val_Label']['value']
@@ -184,6 +184,19 @@ def get_wikidata_content(wikidata_id, library_id):
                     wikidata_author_birth_date = data['val_Label']['value']
                     
                 if key == 'prop' and values['value'] == 'http://www.wikidata.org/entity/P570':
-                    wikidata_author_death_date = data['val_Label']['value']    
+                    wikidata_author_death_date = data['val_Label']['value']
+                   
+                if key == 'prop' and values['value'] == 'http://www.wikidata.org/entity/P106':
+                    
+                    for value in values:
+                        occupation = data['val_Label']['value']
+                 
+            if len(occupation) > 0:
+                wikidata_author_occupations.append(occupation)
     
-    return wikidata_author_library_id, wikidata_author_birth_date, wikidata_author_death_date
+    print("wikidata_author_occupations: ", wikidata_author_occupations)
+    return {
+            "wikidata_library_id": wikidata_author_library_id, 
+            "wikidata_birth_date": wikidata_author_birth_date, 
+            "wikidata_death_date": wikidata_author_death_date
+            }
