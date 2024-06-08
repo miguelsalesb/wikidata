@@ -183,17 +183,17 @@ def get_library_record_data(record):
                     if label not in list_400_field:
                         list_all_400_fields.append(dict_400_field)
 
-                    if tag == '830':
-                        for subfield in subfields:
-                            code = subfield.get('code')
-                            value = subfield.text
-                            if code == 'a':
-                                description = value
+                if tag == '830':
+                    for subfield in subfields:
+                        code = subfield.get('code')
+                        value = subfield.text
+                        if code == 'a':
+                            description = value
+
 
 
         # else:
         #     continue
-    
     
     dict_some_fields['library_id'] = library_id
     dict_some_fields['nationality'] = nationality
