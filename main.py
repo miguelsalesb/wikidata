@@ -74,6 +74,27 @@ Fernando Manzanares Abecasis	Fernando Abecasis	                                 
 Fernando Manzanares Abecasis	Fernando Maria Abecasis	                                        1922-	Engenheiro, Investigador
 Fernando Manzanares Abecasis	Fernando Maria Alberto do Perpétuo Socorro Manzanares Abecasis	1922-	Engenheiro, Investigador
 
+
+Have to create 2 fields to registewr the different type of dates:
+1.
+date with 4 digits-
+date with 4 digits-date with 4 digits
+
+2.
+has question marks?
+
+3.
+has circa?
+
+4.
+has fl?
+
+5.
+has fl ca?
+
+6.
+has fl entre?
+
 """   
 
 import sqlite3
@@ -121,7 +142,7 @@ while True:
     # baseurl = "https://urn.bnportugal.gov.pt/nca/unimarc/marcxchange?id="
 
 for record in range(first_record, last_record, 1):
-    label_qid = ""
+    wikidata_label_qid = ""
     
     alias_qid_with_articles, alias_qid_without_articles = [], []
     print("\nID: ", record)
@@ -136,38 +157,59 @@ for record in range(first_record, last_record, 1):
    
     # For the time being, get and write data only of portuguese authors with death dates from 1900 to 1940   
     if 'label' in data_from_200_field and data_from_some_fields['nationality'] == 'PT' and (data_from_200_field['death_date'] > 1899 and data_from_200_field['death_date'] < 1941):  
-        wikidata_400_fields = []        
+        wikidata_alias_qids = []
+        wikidata_author_data_400 = ""
+        wikidata_author_data_400_list = []
     
         if len(data_from_200_field['label']) > 0:
             time.sleep(0.5)
             label_qid_with_articles = wikidata.get_wikidata_id(data_from_200_field['label'], record)
-            # There are cases in which the library label has articles and Wikidata doesn't
+            
+            # There are cases in which the library author name has articles and Wikidata doesn't
             time.sleep(0.5)
-            label_qid_without_articles = wikidata.get_wikidata_id_from_name_without_articles(data_from_200_field['label'], record)
+            label_qid_without_articles = wikidata.get_wikidata_id(data_from_200_field['label'], record, True)
+            
             if len(label_qid_with_articles) > 0:
-                label_qid = label_qid_with_articles
+                wikidata_label_qid = label_qid_with_articles
             else:
-                label_qid = label_qid_without_articles
+                wikidata_label_qid = label_qid_without_articles
+
+            wikidata_author_data_200 = wikidata.get_wikidata_data(wikidata_label_qid, record)
         
         if len(data_from_400_fields) > 0:
             for i in range(len(data_from_400_fields)):
                 if len(data_from_400_fields[i]['alias']) > 0:
                     time.sleep(0.5)
                     alias_qid_with_articles = wikidata.get_wikidata_id(data_from_400_fields[i]['alias'], record)
+                    
                     time.sleep(0.5)
-                    alias_qid_without_articles = wikidata.get_wikidata_id_from_name_without_articles(data_from_400_fields[i]['alias'], record)
-
+                    alias_qid_without_articles = wikidata.get_wikidata_id(data_from_400_fields[i]['alias'], record)
+                
                 if len(alias_qid_with_articles) > 0:
-                    wikidata_400_fields.append(alias_qid_with_articles)
+                    wikidata_alias_qids.append(alias_qid_with_articles)
+                    wikidata_author_data_400 = wikidata.get_wikidata_data(alias_qid_with_articles, record)
+                    wikidata_author_data_400_list.append(wikidata_author_data_400)
                 elif len(alias_qid_without_articles) > 0:
-                    wikidata_400_fields.append(alias_qid_without_articles)
+                    wikidata_alias_qids.append(alias_qid_without_articles)
+                    wikidata_author_data_400 = wikidata.get_wikidata_data(alias_qid_without_articles, record)
+                    wikidata_author_data_400_list.append(wikidata_author_data_400)
                 else:
-                    wikidata_400_fields.append('')
+                    wikidata_alias_qids.append('')
+                    wikidata_author_data_400_list.append({"wikidata_author_library_id": '',
+                "wikidata_author_description": '', 
+                "wikidata_author_birth_date": '', 
+                "wikidata_author_death_date": '',
+                "wikidata_author_occupations": [],
+                "wikidata_author_notable_work": []
+                }   )
+        
                         
         print(f'\n200 field: {data_from_200_field} - 400 fields: {data_from_400_fields}')    
-        print(f'Wikidata label QID: {label_qid} - Alias QIDs: {wikidata_400_fields}')
+        print(f'Wikidata label QID: {wikidata_label_qid} - Alias QIDs: {wikidata_alias_qids}')
+        print(f'\nWikidata 200 field: {wikidata_author_data_200}')
+        print(f'\nWikidata 400 fields: : {wikidata_author_data_400_list}')
 
         if len(data_from_200_field) > 0:        
-                db.update_author(data_from_some_fields, data_from_200_field, data_from_400_fields, label_qid, wikidata_400_fields)
+                db.update_author(data_from_some_fields, data_from_200_field, data_from_400_fields, wikidata_label_qid, wikidata_alias_qids, wikidata_author_data_200, wikidata_author_data_400_list)
             
 

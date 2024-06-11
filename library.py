@@ -24,8 +24,8 @@ def get_library_record_data(record):
 
     # Create a list to append the general data, to avoid returning a long list of variables    
     dict_some_fields = {}
-    
-            
+
+
     # Create a dictionnary to append the 200 data
     dict_200_field = {}
     name_200_field, surname_200_field, initials_200_field, dates_200_field, label = "", "", "", "", ""
@@ -33,9 +33,9 @@ def get_library_record_data(record):
     # Create a list to append the 400 fields data
     list_all_400_fields = []
     # field 400 is repeatable, so data is appended to lists
-        
+
     baseurl = "https://urn.bnportugal.gov.pt/nca/unimarc/marcxchange?id="
-    
+
     record_url = baseurl + str(record)
 
     try:
@@ -50,7 +50,7 @@ def get_library_record_data(record):
         print("URL (library) Error: ", e)
         # return {}, {}, []
         quit()
-    
+
 
     try:            
         root = ET.fromstring(xml)
@@ -62,21 +62,21 @@ def get_library_record_data(record):
     namespace = {'unimarc': 'info:lc/xmlns/marcxchange-v2'}
 
     leader = root.findall('.//unimarc:leader', namespace)
-    
+
     library_id, nationality, description = "", "", ""
     if len(leader) > 0:
         # Find out if the leader field has:
         # on position 5 the value "n" (new record) or "x" (corrected or revised)
         # From position 6 to 9 the value "x" for authority entry
         # On position 9 the value "a" (name of person entry)
-        # Example: 01266cx a2200253 45         
+        # Example: 01266cx a2200253 45
         if re.findall('(nx|cx)+(\s{1,2}a)+', leader[0].text):
             
             controlfields = root.findall('.//unimarc:controlfield', namespace)
 
             # Get the controlfield 001 that has the Library Id
             if len(controlfields) > 0:
-                
+
                 for controlfield in controlfields:
                     tag = controlfield.get('tag')
                     if tag == '001':
@@ -85,7 +85,7 @@ def get_library_record_data(record):
             # find the datafield elements
             # Asked ChatGPT about this
             datafields = root.findall('.//unimarc:datafield', namespace)
-  
+
             for datafield in datafields:
                 tag = datafield.get('tag')
                 subfields = datafield.findall('unimarc:subfield', namespace)
@@ -93,16 +93,32 @@ def get_library_record_data(record):
                 if tag == '102':
                     for subfield in subfields:
                         code = subfield.get('code')
-                        value = subfield.text.strip()
+                        try:
+                            value = subfield.text.strip()
+                        except ValueError:
+                            f_library_errors.write(f'\nError with field 830 in record: {record} - code {code}')
+                            f_library_errors.flush()
+                            value = ''
                         if code == 'a':
-                            nationality = value                             
+                            nationality = value
                 elif tag == '830':
                     for subfield in subfields:
                         code = subfield.get('code')
-                        value = subfield.text.strip()
+                        try:
+                            value = subfield.text.strip()
+                        except ValueError:
+                            f_library_errors.write(f'\nError with field 830 in record: {record} - code {code}')
+                            f_library_errors.flush()
+                            value = ''
+
                         if code == '9':
-                            nationality = value
-                
+                            try:
+                                nationality = value
+                            except ValueError:
+                                f_library_errors.write(f'Error with subfield 830$9 in record: {record}')
+                                f_library_errors.flush()
+                                value = ''
+
                 if tag == '200':
                     for subfield in subfields:
                         code = subfield.get('code')
@@ -111,41 +127,42 @@ def get_library_record_data(record):
                             # Some names may end with a comma
                             # If that happens, remove it                            
                             value = subfield.text.replace(',', '')
-                        except: 
-                            f_library_errors.write(f'\nError in record: {record} - code {code}')
+                        except ValueError: 
+                            f_library_errors.write(f'\nError with field 200 in record: {record} - code {code}')
                             f_library_errors.flush()
                             continue
                         if code == 'a':
                             name_200_field = value.strip()
                         dict_200_field['name'] = name_200_field
-                            
+
                         if code == 'b':
                             surname_200_field = value.strip()
                         dict_200_field['surname'] = surname_200_field
-                                                    
+
                         if code == 'c':
                             initials_200_field = value.strip()
                         dict_200_field['initials'] = initials_200_field
-                            
+
                         if code == 'f':
                             dates_200_field = value.strip()
                             # get the birth and deatg dates from the dates
                             birth_date, death_date = dates.get_dates(dates_200_field)
-                        dict_200_field['dates'] = dates_200_field
+                        dict_200_field['dates'] = dates_200_field.replace('<', '').replace('>', '')
                         dict_200_field['birth_date'] = birth_date
                         dict_200_field['death_date'] = death_date
-                    label = surname_200_field.strip() + " " + name_200_field.strip()
+                    # label = full author's name    
+                    label = f'{surname_200_field.strip()} {name_200_field.strip()}'
                     dict_200_field['label'] = label.strip()
-                            
+
                 list_400_field = []
                 dict_400_field = {}
-                
+
                 name_400_field, surname_400_field, initials_400_field, dates_400_field = "", "", "", ""
                 alias = ""
                 if tag == '400':
-                    
+
                     for subfield in subfields:
-                        
+
                         code = subfield.get('code')
                         # Some names may end with a comma
                         # If that happens, remove it
@@ -156,7 +173,7 @@ def get_library_record_data(record):
                                 value = subfield.text.replace(',', '')
                             else:
                                 value = subfield.text
-                                
+
                             if code == 'a':
                                 name_400_field = value.strip()
                                 dict_400_field['name'] = name_400_field
@@ -171,10 +188,10 @@ def get_library_record_data(record):
                                 list_400_field.append(dict_400_field['initials'])
                             if code == 'f':
                                 dates_400_field = value.strip()
-                                dict_400_field['dates'] = dates_400_field
+                                dict_400_field['dates'] = dates_400_field.replace('<', '').replace('>', '')
                                 list_400_field.append(dict_400_field['dates'])
-                                
-                            alias = surname_400_field + " " + name_400_field
+
+                            alias = f'{surname_400_field} {name_400_field}'
                             dict_400_field['alias'] = alias.strip()
                             list_400_field.append(dict_400_field['alias'])
 
@@ -190,18 +207,9 @@ def get_library_record_data(record):
                         if code == 'a':
                             description = value
 
-
-
-        # else:
-        #     continue
-    
     dict_some_fields['library_id'] = library_id
     dict_some_fields['nationality'] = nationality
     dict_some_fields['description'] = description
-
-    
-    # if record % 100 == 0 : time.sleep(1)
-    
 
     return dict_some_fields, dict_200_field, list_all_400_fields
         
