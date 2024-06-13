@@ -25,33 +25,6 @@ qualifiers_list = []
 qualifiers_qids = {'ca': 'Q5727902', 'fl': 'P1317'}
 
 
-def get_dates(date):
-    
-    birth_date = 0
-    death_date = 0
-
-    if 'ca' in date and 'fl' not in date:
-        ca = re.findall('(ca]+)', date)
-        print(ca)
-
-    try:
-        dates = re.findall('([0-9]{4})-([0-9]{4})', date)
-    except:
-        return '', ''
-    
-    try:
-        birth_date = int(dates[0][0])
-    except:
-        birth_date = 0
-
-    try:
-        death_date = int(dates[0][1])
-    except:
-        death_date = 0
-    
-    return birth_date, death_date
-
-
 def get_qualifiers_list(dates, qualifiers=''):
     # Since there may be more than one qualifier in the birth or death dates
     # create a dictionnary with lists containing the qualifiers before and after the hifen
